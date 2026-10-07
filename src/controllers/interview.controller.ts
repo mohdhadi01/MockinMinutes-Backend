@@ -360,7 +360,7 @@ function isRateLimitError(err: unknown): boolean {
 /**
  * POST /api/chat
  * Body matches frontend Redux (state.interview): { history, domain?, difficulty?, focusTopic? }
- * Uses Groq llama-3.1-8b-instant. On 429 returns friendly "Server Busy" message.
+ * Uses Groq openai/gpt-oss-20b. On 429 returns friendly "Server Busy" message.
  */
 export async function chat(req: Request, res: Response): Promise<void> {
   try {
@@ -419,8 +419,12 @@ export async function chat(req: Request, res: Response): Promise<void> {
     const completion = await groq.chat.completions.create({
       model: CHAT_MODEL,
       messages,
-      max_tokens: 256,
+      // gpt-oss emits hidden reasoning tokens that count against max_tokens; 256
+      // truncated the JSON mid-object (json_validate_failed), so keep headroom and
+      // cap reasoning effort to leave room for the actual JSON payload
+      max_tokens: 1024,
       temperature: 0.7,
+      reasoning_effort: 'low',
       // Ask model to return a JSON object to make parsing more reliable
       response_format: { type: 'json_object' },
     });
@@ -458,7 +462,7 @@ export async function chat(req: Request, res: Response): Promise<void> {
 /**
  * POST /api/analyze
  * Body: { transcript }
- * Uses Groq llama-3.3-70b-versatile with response_format: json_object.
+ * Uses Groq openai/gpt-oss-120b with response_format: json_object.
  * Returns { score, feedback_summary, strengths, weaknesses }.
  */
 export async function analyze(req: Request, res: Response): Promise<void> {
@@ -487,8 +491,11 @@ export async function analyze(req: Request, res: Response): Promise<void> {
           content: `Analyze this interview transcript and output strictly valid JSON with: score (number 0-100), feedback_summary (string), strengths (array of strings), weaknesses (array of strings).\n\nTranscript:\n---\n${transcriptStr}\n---`,
         },
       ],
-      max_tokens: 1024,
+      max_tokens: 2048,
       temperature: 0.3,
+      // same reasoning-token caveat as chat: without a cap, long reasoning can
+      // exhaust max_tokens and truncate the JSON
+      reasoning_effort: 'low',
       response_format: { type: 'json_object' },
     });
 

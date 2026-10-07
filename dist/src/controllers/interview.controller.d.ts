@@ -36,13 +36,13 @@ export interface ChatTurnResult {
 /**
  * POST /api/chat
  * Body matches frontend Redux (state.interview): { history, domain?, difficulty?, focusTopic? }
- * Uses Groq llama-3.1-8b-instant. On 429 returns friendly "Server Busy" message.
+ * Uses Groq openai/gpt-oss-20b. On 429 returns friendly "Server Busy" message.
  */
 export declare function chat(req: Request, res: Response): Promise<void>;
 /**
  * POST /api/analyze
  * Body: { transcript }
- * Uses Groq llama-3.3-70b-versatile with response_format: json_object.
+ * Uses Groq openai/gpt-oss-120b with response_format: json_object.
  * Returns { score, feedback_summary, strengths, weaknesses }.
  */
 export declare function analyze(req: Request, res: Response): Promise<void>;
