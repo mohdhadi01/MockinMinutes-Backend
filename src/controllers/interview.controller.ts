@@ -3,8 +3,11 @@ import Groq from 'groq-sdk';
 
 const groqApiKey = process.env.GROQ_API_KEY;
 
-const CHAT_MODEL = 'llama-3.1-8b-instant';
-const ANALYZE_MODEL = 'llama-3.3-70b-versatile';
+// llama-3.1-8b-instant / llama-3.3-70b-versatile were retired on Groq's free tier (Aug 2026);
+// gpt-oss models have separate per-model rate-limit budgets, so splitting endpoints across
+// them doubles the effective free-tier capacity.
+const CHAT_MODEL = 'openai/gpt-oss-20b';
+const ANALYZE_MODEL = 'openai/gpt-oss-120b';
 
 // const SYSTEM_PROMPT_GREETING = `You are a professional technical interviewer. Your tone is warm and encouraging.
 // When the conversation has just started (no prior messages from the candidate), respond with a brief warm greeting and ask the candidate to introduce themselves.
